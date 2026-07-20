@@ -1,0 +1,87 @@
+# Build the five GtkHx test-rig containers and push them to GHCR.
+#
+# Images (dir -> tag):
+#   images/mhxd        -> ghcr.io/<owner>/gtkhx-mhxd
+#   images/janus       -> ghcr.io/<owner>/gtkhx-janus
+#   images/argus       -> ghcr.io/<owner>/gtkhx-argus
+#   images/hxtrackd    -> ghcr.io/<owner>/gtkhx-hxtrackd
+#   images/socks-proxy -> ghcr.io/<owner>/gtkhx-socks
+#
+# Each is tagged :latest and :<git-sha>. A git tag (v*) additionally
+# stamps the tag name so a release can pin an exact set.
+#
+# Consuming these instead of building them in the GtkHx repo's CI is the
+# whole point — see docs/consuming-in-gtkhx-ci.md.
+
+name: publish images
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "images/**"
+      - "!images/ci-base/**"
+      - ".github/workflows/publish-images.yml"
+  # Rebuild weekly so the images pick up upstream drift: mhxd master,
+  # microsocks, the base OS security updates, and the pinned Janus/Argus
+  # tarballs if they're refreshed.
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { dir: mhxd,        image: gtkhx-mhxd }
+          - { dir: janus,       image: gtkhx-janus }
+          - { dir: argus,       image: gtkhx-argus }
+          - { dir: hxtrackd,    image: gtkhx-hxtrackd }
+          - { dir: socks-proxy, image: gtkhx-socks }
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: set up docker buildx
+        uses: docker/setup-buildx-action@v3
+
+      # GHCR image paths must be lowercase; org/user names can contain
+      # uppercase, so normalise before building the tag.
+      - name: compute image ref
+        id: ref
+        run: |
+          owner=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          echo "repo=${REGISTRY}/${owner}/${{ matrix.image }}" >> "$GITHUB_OUTPUT"
+
+      - name: log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: build + push ${{ matrix.image }}
+        uses: docker/build-push-action@v6
+        with:
+          context: images/${{ matrix.dir }}
+          push: true
+          # :latest + the commit SHA always; the git tag name too on v* tags.
+          tags: |
+            ${{ steps.ref.outputs.repo }}:latest
+            ${{ steps.ref.outputs.repo }}:${{ github.sha }}
+            ${{ startsWith(github.ref, 'refs/tags/v') && format('{0}:{1}', steps.ref.outputs.repo, github.ref_name) || '' }}
+          # Per-image GHA layer cache — a warm cache skips the mhxd
+          # compile and the Janus/Argus tarball pulls on unchanged images.
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+          provenance: false

@@ -1,0 +1,50 @@
+# Argus tracker configuration.
+#
+# Argus is VesperNet's closed-source Hotline tracker (v1/v2/v3). This is a
+# general default config; adjust for your deployment or mount your own
+# over it. The listen ports can also be overridden at runtime with
+# ARGUS_TCP_PORT / ARGUS_UDP_PORT (see docker-entrypoint.sh).
+
+listen:
+  # Conventional Hotline tracker ports.
+  tcp_port: 5498
+  udp_port: 5499
+  bind_address: "0.0.0.0"
+
+registration:
+  password: ""
+  expiry_seconds: 600
+  max_servers_per_ip: 10
+  # Reject registrations whose source IP is RFC-1918/private. Keep true
+  # for a public tracker; set false if servers register from inside the
+  # same private network / container bridge.
+  reject_private_ips: true
+  ack_enabled: false
+  heartbeat_interval: 300
+  tracker_name: "argus"
+  hmac_secret: ""
+
+authentication:
+  listing_mode: open
+  registration_mode: open
+  accounts_file: "accounts.yaml"
+
+api:
+  enabled: false
+
+federation:
+  enabled: false
+
+mnemosyne:
+  enabled: false
+
+logging:
+  level: info
+
+ban_file: "bans.txt"
+
+promoted_dedup: true
+
+# Operator-promoted server listings. Empty by default; add entries to pin
+# servers into every listing.
+promoted_servers: []
