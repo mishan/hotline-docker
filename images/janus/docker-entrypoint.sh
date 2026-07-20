@@ -18,7 +18,7 @@
 #     -v /etc/letsencrypt/live/example.com:/certs:ro \
 #     -e JANUS_TLS_CERT=/certs/fullchain.pem \
 #     -e JANUS_TLS_KEY=/certs/privkey.pem \
-#     ghcr.io/<owner>/gtkhx-janus
+#     ghcr.io/<owner>/janus
 #
 # Bind-mounting certbot's live/ directory means renewals are picked up on
 # a container restart with no image rebuild. You can also skip all of this

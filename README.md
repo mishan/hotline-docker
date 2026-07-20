@@ -9,12 +9,12 @@ CI pulls instead of rebuilding on every run.
 
 | Image (`images/<dir>`) | Published tag    | Default ports        | Role |
 |------------------------|------------------|----------------------|------|
-| `mhxd`                 | `gtkhx-mhxd`     | 5500 / 5501          | Hotline server (mhxd) |
-| `janus`                | `gtkhx-janus`    | 5500 / 5501 (+TLS)   | Hotline server (VesperNet Janus) |
-| `argus`                | `gtkhx-argus`    | 5498 tcp / 5499 udp  | Tracker (v1/v2/v3, VesperNet Argus) |
-| `hxtrackd`             | `gtkhx-hxtrackd` | 5498 tcp / 5499 udp  | Tracker (pre-spec v1, mhxd's hxtrackd) |
+| `mhxd`                 | `mhxd`     | 5500 / 5501          | Hotline server (mhxd) |
+| `janus`                | `janus`    | 5500 / 5501 (+TLS)   | Hotline server (VesperNet Janus) |
+| `argus`                | `argus`    | 5498 tcp / 5499 udp  | Tracker (v1/v2/v3, VesperNet Argus) |
+| `hxtrackd`             | `hxtrackd` | 5498 tcp / 5499 udp  | Tracker (pre-spec v1, mhxd's hxtrackd) |
 | `socks-proxy`          | `gtkhx-socks`    | 1080                 | SOCKS5 proxy (microsocks) |
-| `ci-base`              | `gtkhx-ci-base`  | —                    | Fedora + the GtkHx build/test toolchain |
+| `ci-base`              | `gtkhx-ci-base` | —                    | Fedora + the GtkHx build/test toolchain |
 
 Each image runs a **general default config** (features off, conventional
 ports, no seeded content). Customise at runtime with env vars or by
@@ -43,7 +43,7 @@ docker run -d --network host \
   -v /etc/letsencrypt/live/example.com:/certs:ro \
   -e JANUS_TLS_CERT=/certs/fullchain.pem \
   -e JANUS_TLS_KEY=/certs/privkey.pem \
-  ghcr.io/<owner>/gtkhx-janus
+  ghcr.io/<owner>/janus
 ```
 
 ## Where images are published
@@ -51,10 +51,10 @@ docker run -d --network host \
 GitHub Container Registry (GHCR), under the repo owner's namespace:
 
 ```
-ghcr.io/<owner>/gtkhx-mhxd:latest
-ghcr.io/<owner>/gtkhx-janus:latest
-ghcr.io/<owner>/gtkhx-argus:latest
-ghcr.io/<owner>/gtkhx-hxtrackd:latest
+ghcr.io/<owner>/mhxd:latest
+ghcr.io/<owner>/janus:latest
+ghcr.io/<owner>/argus:latest
+ghcr.io/<owner>/hxtrackd:latest
 ghcr.io/<owner>/gtkhx-socks:latest
 ghcr.io/<owner>/gtkhx-ci-base:latest      # also :fedora43
 ```
@@ -80,7 +80,7 @@ own. A typical deployment is a single server on its conventional port:
 
 ```sh
 # mhxd Hotline server
-docker run -d -p 5500:5500 -p 5501:5501 ghcr.io/<owner>/gtkhx-mhxd
+docker run -d -p 5500:5500 -p 5501:5501 ghcr.io/<owner>/mhxd
 
 # Janus Hotline server (with HOPE + a Let's Encrypt cert)
 docker run -d --network host \
@@ -88,13 +88,13 @@ docker run -d --network host \
   -e JANUS_ENABLE_HOPE=true \
   -e JANUS_TLS_CERT=/certs/fullchain.pem \
   -e JANUS_TLS_KEY=/certs/privkey.pem \
-  ghcr.io/<owner>/gtkhx-janus
+  ghcr.io/<owner>/janus
 
 # Argus tracker
-docker run -d -p 5498:5498 -p 5499:5499/udp ghcr.io/<owner>/gtkhx-argus
+docker run -d -p 5498:5498 -p 5499:5499/udp ghcr.io/<owner>/argus
 
 # hxtrackd tracker
-docker run -d -p 5498:5498 -p 5499:5499/udp ghcr.io/<owner>/gtkhx-hxtrackd
+docker run -d -p 5498:5498 -p 5499:5499/udp ghcr.io/<owner>/hxtrackd
 ```
 
 To have a server register with a tracker, pass `TRACKERS` (mhxd/Janus) —
@@ -103,7 +103,7 @@ running its WebRTC voice path.
 
 ## Using in GtkHx's CI
 
-GtkHx's CI pulls these images and the `ci-base` toolchain instead of
+GtkHx's CI pulls these images and the `gtkhx-ci-base` toolchain instead of
 building/installing on every run, and layers its **test-specific**
 configuration (seeded accounts, fixtures, rate-limit-off, promoted
 tracker entries, the Argus TLS sidecar, the collision-avoidance ports) on

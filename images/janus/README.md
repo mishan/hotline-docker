@@ -40,7 +40,7 @@ CI runner's machine.
 From the repo root:
 
 ```sh
-docker build -t gtkhx-janus tests/janus
+docker build -t janus .
 ```
 
 The build pulls
@@ -56,7 +56,7 @@ config.
 ## Run
 
 ```sh
-docker run --rm --network=host gtkhx-janus
+docker run --rm --network=host janus
 ```
 
 `--network=host` is required for the voice chat extension (Phase 8).

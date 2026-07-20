@@ -22,7 +22,7 @@ It passes the proxy URI to the FFI directly rather than going through
 not exercised by this test.
 
 ```sh
-docker build -t gtkhx-socks tests/socks-proxy
+docker build -t gtkhx-socks .
 # host networking so the proxy reaches mhxd's published 127.0.0.1:5500
 docker run -d --name gtkhx-socks --network host gtkhx-socks
 GTKHX_TEST_SOCKS=socks5://127.0.0.1:1080 \

@@ -1,10 +1,10 @@
 # Build the five GtkHx test-rig containers and push them to GHCR.
 #
 # Images (dir -> tag):
-#   images/mhxd        -> ghcr.io/<owner>/gtkhx-mhxd
-#   images/janus       -> ghcr.io/<owner>/gtkhx-janus
-#   images/argus       -> ghcr.io/<owner>/gtkhx-argus
-#   images/hxtrackd    -> ghcr.io/<owner>/gtkhx-hxtrackd
+#   images/mhxd        -> ghcr.io/<owner>/mhxd
+#   images/janus       -> ghcr.io/<owner>/janus
+#   images/argus       -> ghcr.io/<owner>/argus
+#   images/hxtrackd    -> ghcr.io/<owner>/hxtrackd
 #   images/socks-proxy -> ghcr.io/<owner>/gtkhx-socks
 #
 # Each is tagged :latest and :<git-sha>. A git tag (v*) additionally
@@ -43,10 +43,10 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - { dir: mhxd,        image: gtkhx-mhxd }
-          - { dir: janus,       image: gtkhx-janus }
-          - { dir: argus,       image: gtkhx-argus }
-          - { dir: hxtrackd,    image: gtkhx-hxtrackd }
+          - { dir: mhxd,        image: mhxd }
+          - { dir: janus,       image: janus }
+          - { dir: argus,       image: argus }
+          - { dir: hxtrackd,    image: hxtrackd }
           - { dir: socks-proxy, image: gtkhx-socks }
     steps:
       - name: checkout

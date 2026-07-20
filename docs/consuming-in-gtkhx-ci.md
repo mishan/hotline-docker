@@ -33,7 +33,7 @@ CI to *pull* them:
 ## 1. Toolchain: use `gtkhx-ci-base` instead of `fedora:43` + `dnf`
 
 In the **build + unit + proto** step, change the container image and drop
-the two `dnf -y install` blocks (the deps are baked into `ci-base`). The
+the two `dnf -y install` blocks (the deps are baked into `gtkhx-ci-base`). The
 MSRV assertion and the builds stay exactly as they are.
 
 ```diff
@@ -101,7 +101,7 @@ replace the "pull tarball / compile mhxd" build stage with a single
 Example — `tests/janus/Dockerfile`:
 
 ```dockerfile
-ARG BASE=ghcr.io/OWNER/gtkhx-janus:latest
+ARG BASE=ghcr.io/OWNER/janus:latest
 FROM ${BASE}
 
 # Test tuning happens as root, then drops back to the janus user.
@@ -138,17 +138,17 @@ USER janus
 
 The other three follow the same shape:
 
-- **`tests/mhxd/Dockerfile`** → `FROM ghcr.io/OWNER/gtkhx-mhxd:latest`, then
+- **`tests/mhxd/Dockerfile`** → `FROM ghcr.io/OWNER/mhxd:latest`, then
   `COPY conf/hxd.conf` (nospam-off test variant), `COPY conf/accounts/guest/UserData`,
   and the `files/` fixture + banner `RUN` steps.
-- **`tests/argus/Dockerfile`** → `FROM ghcr.io/OWNER/gtkhx-argus:latest`, then
+- **`tests/argus/Dockerfile`** → `FROM ghcr.io/OWNER/argus:latest`, then
   install `stunnel4`/`openssl`, `COPY conf/config.yaml` (promoted servers,
   debug, `tcp_port: 5698`), `COPY conf/stunnel.conf`, generate the cert,
   and use the argus+stunnel `entrypoint.sh`.
-- **`tests/hxtrackd/Dockerfile`** → `FROM ghcr.io/OWNER/gtkhx-hxtrackd:latest`,
+- **`tests/hxtrackd/Dockerfile`** → `FROM ghcr.io/OWNER/hxtrackd:latest`,
   install `python3-minimal`, `COPY conf/hxtrackd.conf` (24h interval) +
   `seed-tracker.py`, and use the seed-loop `docker-entrypoint.sh`.
-- **socks** has no test tuning — point GtkHx's compose at
+- **gtkhx-socks** has no test tuning — point GtkHx's compose at
   `ghcr.io/OWNER/gtkhx-socks` directly (no overlay needed).
 
 `OWNER` is best passed as a build arg / `${{ github.repository_owner }}`

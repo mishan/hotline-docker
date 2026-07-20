@@ -8,8 +8,8 @@
 # tests/mhxd/conf/ and tests/mhxd/patches/ keeps the source-of-truth
 # auditable in git.
 #
-# Build:    docker build -t gtkhx-mhxd tests/mhxd
-# Run:      docker run --rm -p 5500:5500 -p 5501:5501 gtkhx-mhxd
+# Build:    docker build -t mhxd .
+# Run:      docker run --rm -p 5500:5500 -p 5501:5501 mhxd
 # Connect:  point GtkHx at localhost:5500
 #
 # The mhxd clone is PINNED to a specific commit (MHXD_REV below). It

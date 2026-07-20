@@ -24,7 +24,7 @@ GtkHx's protocol stack came from), open-source, and runs locally.
 From the repo root:
 
 ```sh
-docker build -t gtkhx-mhxd tests/mhxd
+docker build -t mhxd .
 ```
 
 The build pulls mhxd's `master` branch fresh on every run (no pinned
@@ -35,7 +35,7 @@ the full tree compile.
 ## Run
 
 ```sh
-docker run --rm -p 5500:5500 -p 5501:5501 gtkhx-mhxd
+docker run --rm -p 5500:5500 -p 5501:5501 mhxd
 ```
 
 That's the foreground mode — Ctrl+C kills the container. Logs go
@@ -92,18 +92,18 @@ Examples:
 
 ```sh
 # Default: URL mode, placehold.co fixture
-docker run --rm -p 5500:5500 -p 5501:5501 gtkhx-mhxd
+docker run --rm -p 5500:5500 -p 5501:5501 mhxd
 
 # File mode, baked-in JPEG
 docker run --rm -p 5500:5500 -p 5501:5501 \
-    -e BANNER_MODE=JPEG gtkhx-mhxd
+    -e BANNER_MODE=JPEG mhxd
 
 # File mode, GIF, bring your own banner
 docker run --rm -p 5500:5500 -p 5501:5501 \
     -e BANNER_MODE=GIFf \
     -e BANNER_FILE=/opt/mhxd/run/custom.gif \
     -v $PWD/my_banner.gif:/opt/mhxd/run/custom.gif:ro \
-    gtkhx-mhxd
+    mhxd
 ```
 
 ## Layout

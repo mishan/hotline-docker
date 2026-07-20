@@ -7,7 +7,7 @@
 # mhxd container, exercising resolve_and_connect's proxy branch ->
 # tokio-socks -> the proxy -> mhxd end to end.
 #
-# Build:  docker build -t gtkhx-socks tests/socks-proxy
+# Build:  docker build -t gtkhx-socks .
 # Run:    docker run --rm --network host gtkhx-socks
 #         (host networking so the proxy can reach mhxd's published
 #          127.0.0.1:5500 the same way the test runner does)

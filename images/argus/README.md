@@ -43,7 +43,7 @@ CI runner's machine. Same legal posture as Janus.
 From the repo root:
 
 ```sh
-docker build -t gtkhx-argus tests/argus
+docker build -t argus .
 ```
 
 The build pulls
@@ -57,7 +57,7 @@ ARG; we deliberately don't auto-track upstream.
 ```sh
 docker run --rm \
     -p 5698:5698 -p 6498:6498 -p 5699:5699/udp \
-    gtkhx-argus
+    argus
 ```
 
 GtkHx points at the tracker by default (Settings → Tracker host),

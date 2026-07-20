@@ -6,8 +6,8 @@
 # in. Toggle features and provide a TLS certificate at runtime (see the
 # entrypoint / conf/config.yaml), or mount your own config.yaml.
 #
-# Build:    docker build -t gtkhx-janus .
-# Run:      docker run -d --network host gtkhx-janus
+# Build:    docker build -t janus .
+# Run:      docker run -d --network host janus
 # Connect:  point a Hotline client at <host>:5500
 #
 # Common runtime env (all optional; see docker-entrypoint.sh):

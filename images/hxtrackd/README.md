@@ -39,7 +39,7 @@ self-contained.
 ## Build
 
 ```sh
-docker build -t gtkhx-hxtrackd tests/hxtrackd
+docker build -t hxtrackd .
 ```
 
 The build clones mhxd master (same as `tests/mhxd/`), runs
@@ -49,7 +49,7 @@ to `/opt/hxtrackd`, and overlays `tests/hxtrackd/conf/hxtrackd.conf`.
 ## Run
 
 ```sh
-docker run --rm -p 5498:5498 -p 5499:5499/udp gtkhx-hxtrackd
+docker run --rm -p 5498:5498 -p 5499:5499/udp hxtrackd
 ```
 
 hxtrackd uses its conventional `5498/5499` directly — these are
@@ -108,7 +108,7 @@ To poke at hxtrackd from inside the container during a build
 debug:
 
 ```sh
-docker run --rm -it --entrypoint /bin/sh gtkhx-hxtrackd
+docker run --rm -it --entrypoint /bin/sh hxtrackd
 ```
 
 Then `/opt/hxtrackd/run/bin/hxtrackd` runs it manually (note the

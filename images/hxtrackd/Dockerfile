@@ -15,8 +15,8 @@
 #     as the mhxd container next to it; we just compile + run
 #     the hxtrackd binary instead of hxd.
 #
-# Build:    docker build -t gtkhx-hxtrackd tests/hxtrackd
-# Run:      docker run --rm -p 5498:5498 -p 5499:5499/udp gtkhx-hxtrackd
+# Build:    docker build -t hxtrackd .
+# Run:      docker run --rm -p 5498:5498 -p 5499:5499/udp hxtrackd
 # Connect:  point GtkHx tracker fetcher at localhost:5498
 #
 # Ports: hxtrackd binds its hardcoded HTRK_TCPPORT/HTRK_UDPPORT

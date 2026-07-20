@@ -5,8 +5,8 @@
 # version detection. This image runs it with a general default config;
 # nothing test-specific is baked in.
 #
-# Build:    docker build -t gtkhx-argus .
-# Run:      docker run -d -p 5498:5498 -p 5499:5499/udp gtkhx-argus
+# Build:    docker build -t argus .
+# Run:      docker run -d -p 5498:5498 -p 5499:5499/udp argus
 # Connect:  point a Hotline client's tracker fetcher at <host>:5498
 #
 # Optional runtime env (see docker-entrypoint.sh):

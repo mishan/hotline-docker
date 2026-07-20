@@ -27,19 +27,19 @@
 # Examples:
 #
 #   # URL mode (current default; integration suite expects this)
-#   docker run --rm -p 5500:5500 -p 5501:5501 gtkhx-mhxd
+#   docker run --rm -p 5500:5500 -p 5501:5501 mhxd
 #
 #   # File mode, JPEG, served from the seeded /opt/mhxd/run/banner.jpg
 #   docker run --rm -p 5500:5500 -p 5501:5501 \
 #       -e BANNER_MODE=JPEG \
-#       gtkhx-mhxd
+#       mhxd
 #
 #   # File mode, GIF, custom banner mounted at runtime
 #   docker run --rm -p 5500:5500 -p 5501:5501 \
 #       -e BANNER_MODE=GIFf \
 #       -e BANNER_FILE=/opt/mhxd/run/custom.gif \
 #       -v $PWD/my_banner.gif:/opt/mhxd/run/custom.gif:ro \
-#       gtkhx-mhxd
+#       mhxd
 
 set -eu
 
