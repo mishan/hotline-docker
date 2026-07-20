@@ -18,7 +18,7 @@
 # (and the GNOME 49 Flatpak runtime GtkHx targets) need.
 #
 # Build:   docker build -t gtkhx-ci-base images/ci-base
-# Publish: pushed to ghcr.io/<owner>/gtkhx-ci-base by
+# Publish: pushed to ghcr.io/mishan/gtkhx-ci-base by
 #          .github/workflows/publish-ci-base.yml
 # Consume: see docs/consuming-in-gtkhx-ci.md
 

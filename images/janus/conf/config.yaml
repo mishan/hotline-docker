@@ -22,7 +22,7 @@ Port: 5500
 #     -v /etc/letsencrypt/live/example.com:/certs:ro \
 #     -e JANUS_TLS_CERT=/certs/fullchain.pem \
 #     -e JANUS_TLS_KEY=/certs/privkey.pem \
-#     ghcr.io/<owner>/janus
+#     ghcr.io/mishan/janus
 #
 # certbot renews in place, so a container restart (or Janus config
 # reload) picks up the new cert; bind-mounting the live/ dir means you

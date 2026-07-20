@@ -43,7 +43,7 @@ docker run -d --network host \
   -v /etc/letsencrypt/live/example.com:/certs:ro \
   -e JANUS_TLS_CERT=/certs/fullchain.pem \
   -e JANUS_TLS_KEY=/certs/privkey.pem \
-  ghcr.io/<owner>/janus
+  ghcr.io/mishan/janus
 ```
 
 ## Where images are published
@@ -51,12 +51,12 @@ docker run -d --network host \
 GitHub Container Registry (GHCR), under the repo owner's namespace:
 
 ```
-ghcr.io/<owner>/mhxd:latest
-ghcr.io/<owner>/janus:latest
-ghcr.io/<owner>/argus:latest
-ghcr.io/<owner>/hxtrackd:latest
-ghcr.io/<owner>/gtkhx-socks:latest
-ghcr.io/<owner>/gtkhx-ci-base:latest      # also :fedora43
+ghcr.io/mishan/mhxd:latest
+ghcr.io/mishan/janus:latest
+ghcr.io/mishan/argus:latest
+ghcr.io/mishan/hxtrackd:latest
+ghcr.io/mishan/gtkhx-socks:latest
+ghcr.io/mishan/gtkhx-ci-base:latest      # also :fedora43
 ```
 
 Each is also tagged with the commit SHA; server images get the git tag
@@ -80,7 +80,7 @@ own. A typical deployment is a single server on its conventional port:
 
 ```sh
 # mhxd Hotline server
-docker run -d -p 5500:5500 -p 5501:5501 ghcr.io/<owner>/mhxd
+docker run -d -p 5500:5500 -p 5501:5501 ghcr.io/mishan/mhxd
 
 # Janus Hotline server (with HOPE + a Let's Encrypt cert)
 docker run -d --network host \
@@ -88,13 +88,13 @@ docker run -d --network host \
   -e JANUS_ENABLE_HOPE=true \
   -e JANUS_TLS_CERT=/certs/fullchain.pem \
   -e JANUS_TLS_KEY=/certs/privkey.pem \
-  ghcr.io/<owner>/janus
+  ghcr.io/mishan/janus
 
 # Argus tracker
-docker run -d -p 5498:5498 -p 5499:5499/udp ghcr.io/<owner>/argus
+docker run -d -p 5498:5498 -p 5499:5499/udp ghcr.io/mishan/argus
 
 # hxtrackd tracker
-docker run -d -p 5498:5498 -p 5499:5499/udp ghcr.io/<owner>/hxtrackd
+docker run -d -p 5498:5498 -p 5499:5499/udp ghcr.io/mishan/hxtrackd
 ```
 
 To have a server register with a tracker, pass `TRACKERS` (mhxd/Janus) —
