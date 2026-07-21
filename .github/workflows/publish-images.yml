@@ -5,7 +5,6 @@
 #   images/janus       -> ghcr.io/<owner>/janus
 #   images/argus       -> ghcr.io/<owner>/argus
 #   images/hxtrackd    -> ghcr.io/<owner>/hxtrackd
-#   images/socks-proxy -> ghcr.io/<owner>/gtkhx-socks
 #
 # Each is tagged :latest and :<git-sha>. A git tag (v*) additionally
 # stamps the tag name so a release can pin an exact set.
@@ -23,8 +22,8 @@ on:
       - "!images/ci-base/**"
       - ".github/workflows/publish-images.yml"
   # Rebuild weekly so the images pick up upstream drift: mhxd master,
-  # microsocks, the base OS security updates, and the pinned Janus/Argus
-  # tarballs if they're refreshed.
+  # the base OS security updates, and the pinned Janus/Argus tarballs
+  # if they're refreshed.
   schedule:
     - cron: "0 6 * * 1"
   workflow_dispatch:
@@ -47,7 +46,6 @@ jobs:
           - { dir: janus,       image: janus }
           - { dir: argus,       image: argus }
           - { dir: hxtrackd,    image: hxtrackd }
-          - { dir: socks-proxy, image: gtkhx-socks }
     steps:
       - name: checkout
         uses: actions/checkout@v4
