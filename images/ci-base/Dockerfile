@@ -35,6 +35,7 @@ FROM fedora:43
 #   libseccomp / lcms2 / fontconfig misc deps (glycin sandbox, colour, fonts)
 #   glycin-loaders ................ hx-image-decode decode tests (2+ loaders)
 #   git / rust / cargo ............ VCS + Rust workspace
+#   mold .......................... fast linker (GtkHx CI links with `mold -run`)
 #   libnice-gstreamer1 / libsoup3 / gstreamer1-* .. voice (WebRTC) stack
 RUN dnf -y install \
         meson ninja-build pkgconf-pkg-config gcc \
@@ -47,6 +48,7 @@ RUN dnf -y install \
         libseccomp-devel lcms2-devel fontconfig-devel \
         glycin-loaders \
         git rust cargo \
+        mold \
         libnice-gstreamer1 \
         libsoup3-devel \
         gstreamer1-devel \
@@ -63,4 +65,5 @@ RUN dnf -y install \
 RUN gcc --version | head -1 \
     && meson --version \
     && rustc --version \
-    && cargo --version
+    && cargo --version \
+    && mold --version | head -1
