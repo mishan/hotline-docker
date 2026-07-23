@@ -53,23 +53,13 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         libncurses-dev \
     && rm -rf /var/lib/apt/lists/*
 
-# Pull mhxd at a pinned revision. c16f038 is the master merge that
-# includes the folder-transfer per-file size fix reworked behind the
-# CONFIG_HFS / operation.hfs gate (PR #3,
-# "fix-folder-get-with-hfs-on-and-no-rsrc-data"). With our `hfs yes`
-# config + fork-less seed files, resource_len() returns 0, so the
-# server claims the correct small per-file size and folder_send streams
-# every file in the tree instead of dying after the first.
+# Pull mhxd at a pinned revision
 WORKDIR /build
-ARG MHXD_REV=c16f038452bbb406b226bcdd5a5510b26ec526c0
+ARG MHXD_REV=1172ff91834020568112cf4a78492fd7950465f5
 RUN git clone https://github.com/kangsterizer/mhxd.git mhxd \
     && git -C mhxd checkout --quiet "$MHXD_REV"
 
-# Local patches applied on top of the pinned revision. Currently:
-#   0001-folder-download-recurse.patch — makes folder_send/folder_getpaths
-#     walk subdirectories (upstream only sends a single directory level,
-#     so nested folder downloads arrive with empty subdirs). Candidate to
-#     upstream to kangsterizer/mhxd; drop this once merged + the pin bumps.
+# Local patches applied on top of the pinned revision.
 COPY patches/ /build/patches/
 RUN for p in /build/patches/*.patch; do \
         echo "applying $p" && git -C mhxd apply "$p"; \
