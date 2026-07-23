@@ -59,11 +59,11 @@ ARG MHXD_REV=1172ff91834020568112cf4a78492fd7950465f5
 RUN git clone https://github.com/kangsterizer/mhxd.git mhxd \
     && git -C mhxd checkout --quiet "$MHXD_REV"
 
-# Local patches applied on top of the pinned revision.
-COPY patches/ /build/patches/
-RUN for p in /build/patches/*.patch; do \
-        echo "applying $p" && git -C mhxd apply "$p"; \
-    done
+# Local patches applied on top of the pinned revision. (currently none)
+# COPY patches/ /build/patches/
+# RUN for p in /build/patches/*.patch; do \
+#         echo "applying $p" && git -C mhxd apply "$p"; \
+#     done
 
 # Configure with the feature set GtkHx exercises:
 #
