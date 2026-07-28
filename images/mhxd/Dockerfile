@@ -129,10 +129,13 @@ COPY conf/hxd.conf /opt/mhxd/run/hxd.conf
 FROM debian:bookworm-slim AS runtime
 
 ARG DEBIAN_FRONTEND=noninteractive
+# netcat-openbsd provides `nc` for the health probe (healthcheck.sh) — the
+# base slim image ships neither nc nor bash's /dev/tcp.
 RUN apt-get update && apt-get install --no-install-recommends -y \
         libssl3 \
         zlib1g \
         libpcre2-8-0 \
+        netcat-openbsd \
     && rm -rf /var/lib/apt/lists/* \
     && useradd --system --create-home --home-dir /var/lib/mhxd \
                --shell /usr/sbin/nologin mhxd
@@ -143,15 +146,24 @@ RUN chown -R mhxd:mhxd /opt/mhxd/run
 
 # Entrypoint script — patches hxd.conf's banner block based on
 # the BANNER_MODE / BANNER_URL / BANNER_FILE env vars at startup,
-# then execs hxd. With no env vars set, behaviour matches the
-# URL-mode default committed in conf/hxd.conf.
+# then runs hxd under a health watchdog (see the script + healthcheck.sh).
+# With no env vars set, behaviour matches the URL-mode default committed in
+# conf/hxd.conf.
 COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
-RUN chmod 755 /usr/local/bin/docker-entrypoint.sh
+COPY healthcheck.sh /usr/local/bin/healthcheck.sh
+RUN chmod 755 /usr/local/bin/docker-entrypoint.sh /usr/local/bin/healthcheck.sh
 
 # Hotline ports:
 #   5500/tcp — HTLS server (clients connect here)
 #   5501/tcp — HTXF file transfer
 EXPOSE 5500/tcp 5501/tcp
+
+# Report health by probing the Hotline handshake on 5500 (healthcheck.sh).
+# This drives `docker ps` health + compose `depends_on: service_healthy` /
+# `docker compose up --wait`; the entrypoint's own watchdog is what forces
+# the container to exit + restart on a persistent wedge.
+HEALTHCHECK --interval=15s --timeout=5s --start-period=15s --retries=3 \
+    CMD ["/usr/local/bin/healthcheck.sh"]
 
 USER mhxd
 WORKDIR /opt/mhxd/run

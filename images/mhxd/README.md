@@ -64,6 +64,33 @@ accounts pre-configured. Both have blank passwords.
 5498 is exposed by the image but only useful if you swap the
 container's CMD to launch `hxtrackd` instead of `hxd`.
 
+## Health & auto-restart
+
+mhxd occasionally wedges — the process stays alive but stops answering
+connections, so Docker's normal restart-on-exit never fires. Two things
+guard against that:
+
+* A **`HEALTHCHECK`** probes the Hotline handshake on 5500 (`healthcheck.sh`
+  sends the client hello and expects the server's `TRTP` reply — stronger
+  than a plain TCP-accept, which would pass while the worker is deadlocked).
+  It drives `docker ps` health and lets `docker compose up --wait` / a
+  `depends_on: condition: service_healthy` block until mhxd is actually
+  serving.
+* The **entrypoint watchdog** runs `hxd` in the background and probes it; on
+  a persistent wedge it kills the server and exits non-zero, so a
+  `restart:` policy brings up a fresh container. A clean `docker stop`
+  (SIGTERM) shuts down and exits 0, so it isn't mistaken for a failure.
+
+Tunables (env, all optional):
+
+| Variable             | Purpose                                   | Default |
+|----------------------|-------------------------------------------|---------|
+| `HX_HEALTH_START`    | grace before the first watchdog probe (s) | `8`     |
+| `HX_HEALTH_INTERVAL` | seconds between watchdog probes           | `15`    |
+| `HX_HEALTH_RETRIES`  | consecutive failures before restart       | `3`     |
+| `HX_HEALTH_TIMEOUT`  | per-probe connect/response timeout (s)    | `3`     |
+| `HX_HEALTH_PORT`     | HTLS port to probe                        | `5500`  |
+
 ## Banner configuration
 
 Hotline servers advertise a per-connection banner image after the
