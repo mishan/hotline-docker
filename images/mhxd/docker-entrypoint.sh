@@ -135,4 +135,65 @@ sed -i \
 
 echo "docker-entrypoint: banner mode=$TYPE file=\"$FILE\" url=\"$URL\""
 
-exec /opt/mhxd/run/bin/hxd "$@"
+# ── Run hxd under a lightweight watchdog ────────────────────────────────
+# mhxd occasionally wedges: the process stays alive but stops accepting /
+# answering connections, so Docker's own restart-on-exit never triggers.
+# Run hxd in the background and probe it (healthcheck.sh does a real Hotline
+# handshake); after HX_HEALTH_RETRIES consecutive failures, kill it and exit
+# non-zero so the orchestrator restarts a fresh container (compose
+# `restart: on-failure`). A clean SIGTERM/SIGINT (docker stop / compose
+# down) shuts hxd down and exits 0, so a deliberate stop is NOT treated as a
+# failure that would trigger a restart.
+#
+# Tunables (env):
+#   HX_HEALTH_START     grace before the first probe   (default 8s)
+#   HX_HEALTH_INTERVAL  seconds between probes          (default 15s)
+#   HX_HEALTH_RETRIES   consecutive fails → restart     (default 3)
+HEALTH_START="${HX_HEALTH_START:-8}"
+HEALTH_INTERVAL="${HX_HEALTH_INTERVAL:-15}"
+HEALTH_RETRIES="${HX_HEALTH_RETRIES:-3}"
+
+# The watchdog does its own error handling; drop -e so a failing probe or an
+# interrupted sleep doesn't abort the script.
+set +e
+
+/opt/mhxd/run/bin/hxd "$@" &
+HXD_PID=$!
+
+# Clean shutdown on stop: forward the signal to hxd, reap it, exit 0.
+term() {
+	echo "docker-entrypoint: signal received — stopping hxd" >&2
+	kill -TERM "$HXD_PID" 2>/dev/null
+	wait "$HXD_PID" 2>/dev/null
+	exit 0
+}
+trap term TERM INT
+
+sleep "$HEALTH_START"
+
+fails=0
+while kill -0 "$HXD_PID" 2>/dev/null; do
+	if /usr/local/bin/healthcheck.sh; then
+		fails=0
+	else
+		fails=$((fails + 1))
+		echo "docker-entrypoint: mhxd health probe failed ($fails/$HEALTH_RETRIES)" >&2
+		if [ "$fails" -ge "$HEALTH_RETRIES" ]; then
+			echo "docker-entrypoint: mhxd wedged — terminating so the container can restart" >&2
+			kill -TERM "$HXD_PID" 2>/dev/null
+			sleep 2
+			kill -KILL "$HXD_PID" 2>/dev/null
+			wait "$HXD_PID" 2>/dev/null
+			exit 1
+		fi
+	fi
+	# Interruptible sleep: a signal during it runs `term` immediately
+	# instead of waiting out the whole interval.
+	sleep "$HEALTH_INTERVAL" &
+	wait "$!"
+done
+
+# hxd exited on its own — propagate its status so a crash counts as a
+# failure (and gets restarted by an on-failure policy).
+wait "$HXD_PID"
+exit $?
