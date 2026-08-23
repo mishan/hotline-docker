@@ -123,6 +123,18 @@ RUN cd /build/mhxd \
 RUN cp -a /build/mhxd/run/hxd /opt/mhxd/run
 COPY conf/hxd.conf /opt/mhxd/run/hxd.conf
 
+# `newsdir` — the 1.5+ threaded-news tree (hxd.conf paths.newsdir). The
+# upstream run/hxd skeleton ships the flat 1.0/1.2 `news` file but not this
+# directory, and `tnews yes` doesn't create it, so threaded news arrives
+# half-configured: NEWSDIRLIST returns an empty root and creating a folder
+# fails inside rcv_news_mkbundle's SYS_mkdir("<newsdir>/<name>"), which hands
+# the client errno verbatim — "No such file or directory". Reading plain news
+# still works throughout, which is what makes it confusing to diagnose.
+#
+# Empty on purpose: an empty root is a valid starting state, and seeding
+# content here would show up in every consumer's news tree.
+RUN mkdir -p /opt/mhxd/run/newsdir
+
 # -----------------------------------------------------------------------------
 # Runtime stage. Slim down to just the binary + runtime libs + config tree.
 # -----------------------------------------------------------------------------

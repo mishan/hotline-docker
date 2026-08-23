@@ -99,8 +99,20 @@ Or as admin (full access):
 
 ```
 Login:   admin
-Pass:    adminpass      (set by the Dockerfile HOPE-seed step)
+Pass:    adminpass      (bcrypt hash written into Users/admin.yaml at
+                         build time — upstream ships an unpublished
+                         password, which makes the account unusable)
 ```
+
+Admin logs in over the plain (non-HOPE) path. Janus checks the `Password:`
+bcrypt hash there, which is the field the image sets. HOPE login for a
+non-empty password is a separate mechanism (`HOPEPassword:`) and is not
+seeded here — use `guest` for HOPE, whose empty password Janus verifies
+server-side without a stored blob.
+
+Change it by mounting your own `Users/admin.yaml`, or overwrite the
+`Password:` line with any bcrypt hash (`htpasswd -bnBC 10 "" yourpass`,
+with the `$2y$` prefix rewritten to `$2a$`).
 
 Janus's default `guest` account has `ReadChatHistory: true` already
 set (access bit 56), so chat-history queries from a guest connection
