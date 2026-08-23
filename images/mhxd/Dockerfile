@@ -59,11 +59,14 @@ ARG MHXD_REV=1172ff91834020568112cf4a78492fd7950465f5
 RUN git clone https://github.com/kangsterizer/mhxd.git mhxd \
     && git -C mhxd checkout --quiet "$MHXD_REV"
 
-# Local patches applied on top of the pinned revision. (currently none)
-# COPY patches/ /build/patches/
-# RUN for p in /build/patches/*.patch; do \
-#         echo "applying $p" && git -C mhxd apply "$p"; \
-#     done
+# Local patches applied on top of the pinned revision. `git apply` fails the
+# build on a patch that no longer applies, which is what we want: a silently
+# skipped patch would ship a server with the bug still in it. Bumping
+# MHXD_REV means re-checking these.
+COPY patches/ /build/patches/
+RUN for p in /build/patches/*.patch; do \
+        echo "applying $p" && git -C mhxd apply "$p"; \
+    done
 
 # Configure with the feature set GtkHx exercises:
 #
