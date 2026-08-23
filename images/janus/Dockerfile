@@ -52,6 +52,26 @@ RUN mkdir -p \
         /opt/janus/Server/Plugins \
         /opt/janus/Server/Logs
 
+# Give `admin` a password anyone can actually use.
+#
+# The upstream tarball ships Users/admin.yaml with a bcrypt hash of some
+# password that isn't published anywhere, which leaves the image's only
+# privileged account unusable — you get a full-access account you cannot log
+# into. Overwrite the hash with one whose plaintext is documented ("adminpass",
+# see README).
+#
+# The hash is precomputed and pinned rather than generated at build time —
+# bcrypt embeds its own salt, so a fixed string is reproducible and needs no
+# bcrypt tool in the build stage. Cross-checked against upstream's own
+# guest.yaml hash, which verifies against the empty password, confirming Janus
+# reads this field as plain bcrypt. Single quotes keep the shell away from the
+# `$2a$` prefix.
+RUN set -eux; \
+    hash='$2a$10$e0LD5a0SsSjwGj1wBvXJQujPhHzxJ8DRQOfBbBrf5iy4XkyG7eQ4.'; \
+    sed -i "s|^Password: .*|Password: ${hash}|" \
+        /opt/janus/Server/Users/admin.yaml; \
+    grep -qF "Password: ${hash}" /opt/janus/Server/Users/admin.yaml
+
 # -----------------------------------------------------------------------------
 # Runtime stage. The Janus binary is statically linked Go, so only
 # ca-certificates is needed (outbound HTTPS to trackers / gateways).
