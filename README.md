@@ -10,6 +10,7 @@ CI pulls instead of rebuilding on every run.
 |------------------------|------------------|----------------------|------|
 | `mhxd`                 | `mhxd`     | 5500 / 5501          | Hotline server (mhxd) |
 | `janus`                | `janus`    | 5500 / 5501 (+TLS)   | Hotline server (VesperNet Janus) |
+| `hlservd`              | `hlservd`  | 5500 / 5501          | Hotline server (hlservd, the 1.9 server as a daemon) |
 | `argus`                | `argus`    | 5498 tcp / 5499 udp  | Tracker (v1/v2/v3, VesperNet Argus) |
 | `hxtrackd`             | `hxtrackd` | 5498 tcp / 5499 udp  | Tracker (pre-spec v1, mhxd's hxtrackd) |
 
@@ -26,6 +27,7 @@ few env knobs applied by the entrypoint:
   `JANUS_ENABLE_CHAT_HISTORY`, `JANUS_ENABLE_VOICE`, `JANUS_TLS_CERT` /
   `JANUS_TLS_KEY`, `TRACKERS`.
 - **mhxd** — `TRACKERS`, `BANNER_MODE` / `BANNER_URL` / `BANNER_FILE`.
+- **hlservd** — `HLSERVD_PORT`, `HLSERVD_NAME`, `HLSERVD_TRUST_LOOPBACK`.
 - **Argus** — `ARGUS_TCP_PORT`, `ARGUS_UDP_PORT`.
 - **hxtrackd** — none (its ports are hardcoded); mount `hxtrackd.conf` to
   tune the drop interval etc.
@@ -50,6 +52,7 @@ GitHub Container Registry (GHCR), under the repo owner's namespace:
 ```
 ghcr.io/mishan/mhxd:latest
 ghcr.io/mishan/janus:latest
+ghcr.io/mishan/hlservd:latest
 ghcr.io/mishan/argus:latest
 ghcr.io/mishan/hxtrackd:latest
 ```
@@ -58,7 +61,7 @@ Each is also tagged with the commit SHA; server images get the git tag
 name on `v*` releases. Two workflows publish (both push with the built-in
 `GITHUB_TOKEN` — enable `packages: write`, already declared):
 
-- `.github/workflows/publish-images.yml` — the five server/proxy images,
+- `.github/workflows/publish-images.yml` — the server and tracker images,
   matrix-built with per-image GHA layer caching. Triggers on `images/**`
   changes, weekly, and manually.
 
@@ -82,6 +85,9 @@ docker run -d --network host \
   -e JANUS_TLS_CERT=/certs/fullchain.pem \
   -e JANUS_TLS_KEY=/certs/privkey.pem \
   ghcr.io/mishan/janus
+
+# hlservd Hotline server (the 1.9 server as a daemon)
+docker run -d -p 5500:5500 -p 5501:5501 ghcr.io/mishan/hlservd
 
 # Argus tracker
 docker run -d -p 5498:5498 -p 5499:5499/udp ghcr.io/mishan/argus
