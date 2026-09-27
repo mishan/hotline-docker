@@ -3,6 +3,7 @@
 # Images (dir -> tag):
 #   images/mhxd        -> ghcr.io/<owner>/mhxd
 #   images/janus       -> ghcr.io/<owner>/janus
+#   images/hlservd     -> ghcr.io/<owner>/hlservd
 #   images/argus       -> ghcr.io/<owner>/argus
 #   images/hxtrackd    -> ghcr.io/<owner>/hxtrackd
 #
@@ -44,6 +45,7 @@ jobs:
         include:
           - { dir: mhxd,        image: mhxd }
           - { dir: janus,       image: janus }
+          - { dir: hlservd,     image: hlservd }
           - { dir: argus,       image: argus }
           - { dir: hxtrackd,    image: hxtrackd }
     steps:
