@@ -30,7 +30,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 # Pinned Janus build. Override JANUS_URL / JANUS_SHA256 to track a
 # different release; a checksum mismatch is a deliberate, loud signal.
 ARG JANUS_URL=https://misha.nasledov.com/janus-linux-amd64.tar.gz
-ARG JANUS_SHA256=3b352d1decc22ab4347f7ecf6d4458a47d7e83c20bdd2191f83e3bc5747405b6
+ARG JANUS_SHA256=5a7adbf5c8ade4ba5447606a913064365d0e633ad686a19ed6a032e13f66008e
 
 WORKDIR /build
 RUN curl -fsSL "$JANUS_URL" -o janus.tar.gz \
