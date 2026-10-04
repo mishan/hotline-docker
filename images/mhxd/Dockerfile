@@ -55,7 +55,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 
 # Pull mhxd at a pinned revision
 WORKDIR /build
-ARG MHXD_REV=1172ff91834020568112cf4a78492fd7950465f5
+ARG MHXD_REV=131d2b3fd4bd067995fb66e0e3e12f4ee34bc71c
 RUN git clone https://github.com/kangsterizer/mhxd.git mhxd \
     && git -C mhxd checkout --quiet "$MHXD_REV"
 
