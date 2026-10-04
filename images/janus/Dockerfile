@@ -27,10 +27,12 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Pinned Janus build. Override JANUS_URL / JANUS_SHA256 to track a
-# different release; a checksum mismatch is a deliberate, loud signal.
-ARG JANUS_URL=https://misha.nasledov.com/janus-linux-amd64.tar.gz
-ARG JANUS_SHA256=5a7adbf5c8ade4ba5447606a913064365d0e633ad686a19ed6a032e13f66008e
+# Pinned Janus build: 2.0.18 (commit bbd96b7). VesperNet's URL is
+# unversioned, so a new upstream release fails the checksum here rather
+# than drifting in silently. To bump: download the tarball, run
+# `janus --version` from it, and update JANUS_SHA256 and the version above.
+ARG JANUS_URL=https://get.vespernet.net/janus-linux-amd64.tar.gz
+ARG JANUS_SHA256=ada7010084dfa59f32e03cf37213af79e213745dfe1738e63f62d4caad419ab3
 
 WORKDIR /build
 RUN curl -fsSL "$JANUS_URL" -o janus.tar.gz \
