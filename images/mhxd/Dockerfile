@@ -55,7 +55,7 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 
 # Pull mhxd at a pinned revision
 WORKDIR /build
-ARG MHXD_REV=131d2b3fd4bd067995fb66e0e3e12f4ee34bc71c
+ARG MHXD_REV=2551666d94b70087841966975311d81a65600bd5
 RUN git clone https://github.com/kangsterizer/mhxd.git mhxd \
     && git -C mhxd checkout --quiet "$MHXD_REV"
 
@@ -65,6 +65,7 @@ RUN git clone https://github.com/kangsterizer/mhxd.git mhxd \
 # MHXD_REV means re-checking these.
 COPY patches/ /build/patches/
 RUN for p in /build/patches/*.patch; do \
+        [ -e "$p" ] || continue; \
         echo "applying $p" && git -C mhxd apply "$p"; \
     done
 
