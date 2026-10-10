@@ -1,0 +1,64 @@
+From cf758172aa13e3b94c5f770f6d8ea620e357ae00 Mon Sep 17 00:00:00 2001
+From: Misha Nasledov <misha@nasledov.com>
+Date: Fri, 9 Oct 2026 22:44:47 -0700
+Subject: [PATCH] hxd: resolve the client's address without a thread per login
+
+rcv_login started a thread to reverse-resolve every client that logged
+in. Under a test suite's load, pthread_create here has aborted in glibc's
+thread stack cache, freeing a dynamic TLS block of an earlier resolver
+thread ("free(): invalid pointer", allocatestack.c get_cached_stack):
+
+  #7  free
+  #8  get_cached_stack        nptl/allocatestack.c:136
+  #10 pthread_create          start_routine=resolve_htlc_address
+  #11 hxd_thread_create       threads.c:22
+  #12 rcv_login               rcv.c:1520
+
+Resolve on the main thread instead, as hxd already does when it is built
+without threads or when creating the thread fails, under alarm(10).
+---
+ src/hxd/rcv.c | 24 +++---------------------
+ 1 file changed, 3 insertions(+), 21 deletions(-)
+
+diff --git a/src/hxd/rcv.c b/src/hxd/rcv.c
+index d344276..1febeb7 100644
+--- a/src/hxd/rcv.c
++++ b/src/hxd/rcv.c
+@@ -1513,31 +1513,13 @@ guest_login:
+ 		return;
+ 
+ 	/* user has successfully logged in */
+-	/* resolve the ip address and store the hostname */
+-#if defined(CONFIG_HTXF_PTHREAD) || defined(CONFIG_HTXF_CLONE)
+-	/* XXX prevent htlc_close from freeing htlc */
+-	mutex_lock(&htlc->htxf_mutex);
+-	err = hxd_thread_create(&tid, &stack, resolve_htlc_address, htlc);
+-	if (err) {
+-		mutex_unlock(&htlc->htxf_mutex);
+-#if !defined(__WIN32__)
+-		alarm(10);
+-#endif
+-		snprintf(htlc->host, sizeof(htlc->host), "%s", resolve(&htlc->sockaddr));
+-		hn = resolve(&htlc->sockaddr);
+-		if (hn)
+-			snprintf(htlc->host, sizeof(htlc->host), "%s", hn);
+-	} else {
+-#if defined(CONFIG_HTXF_PTHREAD)
+-		pthread_detach(tid);
+-#endif
+-	}
+-#else
++	/* resolve the ip address and store the hostname, on this thread:
++	   creating a thread per login here has aborted in glibc's thread
++	   stack cache ("free(): invalid pointer") */
+ 	alarm(10);
+ 	hn = resolve(&htlc->sockaddr);
+ 	if (hn)
+ 		snprintf(htlc->host, sizeof(htlc->host), "%s", hn);
+-#endif
+ 
+ 	htlc->icon = (u_int16_t)icon;
+ 	htlc->uid = uid_assign(htlc);
+-- 
+2.55.0
+
