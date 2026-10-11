@@ -1,0 +1,42 @@
+From de7a8d1ea843871c2f3e96df5b6e7640920a0b9a Mon Sep 17 00:00:00 2001
+From: Misha Nasledov <misha@nasledov.com>
+Date: Sun, 11 Oct 2026 13:15:06 -0700
+Subject: [PATCH 2/2] hlserver: unlock htxf_mutex when free_htxf finds the slot
+ empty
+
+free_htxf returned with the connection's htxf_mutex still held when the slot it was asked to free was already empty, and the next lock of it hung the thread that took it.
+---
+ src/hxd/hlserver.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
+
+diff --git a/src/hxd/hlserver.c b/src/hxd/hlserver.c
+index 491b155..db2422c 100644
+--- a/src/hxd/hlserver.c
++++ b/src/hxd/hlserver.c
+@@ -612,8 +612,10 @@ free_htxf (struct htlc_conn *htlc, u_int16_t i, int get)
+ {
+ 	mutex_lock(&htlc->htxf_mutex);
+ 	if (get) {
+-		if (!htlc->htxf_out[i])
++		if (!htlc->htxf_out[i]) {
++			mutex_unlock(&htlc->htxf_mutex);
+ 			return 0;
++		}
+ #if defined(CONFIG_HTXF_PTHREAD)
+ 		join_thread(htlc->htxf_out[i]->tid);
+ #endif
+@@ -625,8 +627,10 @@ free_htxf (struct htlc_conn *htlc, u_int16_t i, int get)
+ 		htlc->nr_gets--;
+ 		nr_gets--;
+ 	} else {
+-		if (!htlc->htxf_in[i])
++		if (!htlc->htxf_in[i]) {
++			mutex_unlock(&htlc->htxf_mutex);
+ 			return 0;
++		}
+ #if defined(CONFIG_HTXF_PTHREAD)
+ 		join_thread(htlc->htxf_in[i]->tid);
+ #endif
+-- 
+2.55.0
+

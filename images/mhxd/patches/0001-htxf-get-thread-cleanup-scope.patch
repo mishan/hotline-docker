@@ -1,0 +1,90 @@
+From 6591b9b0eac5df174eb764b8cbb515caece868b1 Mon Sep 17 00:00:00 2001
+From: Misha Nasledov <misha@nasledov.com>
+Date: Sun, 11 Oct 2026 13:15:06 -0700
+Subject: [PATCH 1/2] htxf: leave get_thread's cleanup handlers only through
+ their pops
+
+get_thread jumped out of its pthread_cleanup_push scopes (goto ret / ret_err) whenever a send failed or a client closed early. glibc keeps the cleanup record, a jmp_buf among it, on that scope's stack, which the calls after the jump reuse; pthread_exit then unwinds through the clobbered record and corrupts the thread's descriptor. hxd aborted later in glibc's thread stack cache ("free(): invalid pointer" in _dl_deallocate_tls), joining or creating some other thread.
+---
+ src/hxd/htxf.c | 54 +++++++++++++++++++++++++-------------------------
+ 1 file changed, 27 insertions(+), 27 deletions(-)
+
+diff --git a/src/hxd/htxf.c b/src/hxd/htxf.c
+index afdb759..5ca58a3 100644
+--- a/src/hxd/htxf.c
++++ b/src/hxd/htxf.c
+@@ -712,44 +712,44 @@ get_thread (void *__arg)
+ 		retval = errno;
+ 		goto ret_nobuf;
+ 	}
++	/* Every way out of the send passes the pops below: jumping out of a
++	   pthread_cleanup_push scope leaves glibc a cleanup record on stack
++	   that later calls reuse, and pthread_exit then unwinds through it,
++	   corrupting this thread's descriptor ("free(): invalid pointer" when
++	   its stack is freed). */
+ #if defined(CONFIG_HTXF_PTHREAD)
+ 	pthread_cleanup_push(free, buf);
+ #endif
+-	if (htxf->gone)
+-		goto ret;
+-
+-	if (htxf->limit_out_Bps)
+-		wp = watch_new();
++	if (!htxf->gone) {
++		if (htxf->limit_out_Bps)
++			wp = watch_new();
+ #if defined(CONFIG_HTXF_PTHREAD)
+-	pthread_cleanup_push(watch_delete, wp);
++		pthread_cleanup_push(watch_delete, wp);
+ #endif
+-
+-	if (htxf->type == HTXF_TYPE_FILE) {
+-		r = file_send(htxf, buf, wp);
+-	} else if (htxf->type == HTXF_TYPE_BANNER) {
+-		r = file_send(htxf, buf, wp);
+-	} else if (htxf->type == HTXF_TYPE_FOLDER) {
+-		r = folder_send(htxf, buf, wp);
+-	} else {
+-		r = -1;
+-	}
+-	if (r == -1)
+-		goto ret_err;
+-	else if (r == 1)
+-		goto ret;
++		if (htxf->type == HTXF_TYPE_FILE) {
++			r = file_send(htxf, buf, wp);
++		} else if (htxf->type == HTXF_TYPE_BANNER) {
++			r = file_send(htxf, buf, wp);
++		} else if (htxf->type == HTXF_TYPE_FOLDER) {
++			r = folder_send(htxf, buf, wp);
++		} else {
++			r = -1;
++		}
++		retval = r == -1 ? errno : 0;
+ #ifdef CONFIG_WINDOS_CLIENT_FIX
+-	fd_select(s, 3);
++		if (r == 0)
++			fd_select(s, 3);
+ #endif
+-	retval = 0;
++#if defined(CONFIG_HTXF_PTHREAD)
++		/* watch */
++		pthread_cleanup_pop(1);
++		wp = 0;
++#endif
++	}
+ #if defined(CONFIG_HTXF_PTHREAD)
+ 	/* buf */
+ 	pthread_cleanup_pop(1);
+-	/* watch */
+-	pthread_cleanup_pop(1);
+ #endif
+-	goto ret;
+-ret_err:
+-	retval = errno;
+ ret:
+ 	t_free(buf);
+ ret_nobuf:
+-- 
+2.55.0
+
