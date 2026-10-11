@@ -26,8 +26,8 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
         curl \
     && rm -rf /var/lib/apt/lists/*
 
-ARG ARGUS_URL=https://misha.nasledov.com/argus-linux-amd64.tar.gz
-ARG ARGUS_SHA256=8759cb59383c2b1bb7f210ea3bf47912f4cca6f9e46c1b28974f01937eed5628
+ARG ARGUS_URL=https://get.vespernet.net/argus-linux-amd64.tar.gz
+ARG ARGUS_SHA256=d7169abbd3c43f9832e5c86a8aa5c8e5ba46a6b2a1edb6cead679377dbadd659
 
 # A real-browser User-Agent sidesteps a UA-based 403 some CDNs return to
 # curl's default agent.
