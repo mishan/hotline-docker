@@ -29,12 +29,10 @@ RUN apt-get update && apt-get install --no-install-recommends -y \
 ARG ARGUS_URL=https://get.vespernet.net/argus-linux-amd64.tar.gz
 ARG ARGUS_SHA256=d7169abbd3c43f9832e5c86a8aa5c8e5ba46a6b2a1edb6cead679377dbadd659
 
-# A real-browser User-Agent sidesteps a UA-based 403 some CDNs return to
-# curl's default agent.
+# curl's own User-Agent, as for Janus from the same host: a browser one from
+# a CI runner's address draws a 403 there.
 WORKDIR /build
-RUN curl -fsSL \
-        -A "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36" \
-        "$ARGUS_URL" -o argus.tar.gz \
+RUN curl -fsSL "$ARGUS_URL" -o argus.tar.gz \
  && echo "$ARGUS_SHA256  argus.tar.gz" | sha256sum -c - \
  && tar xzf argus.tar.gz \
  && mv argus-linux-amd64 /opt/argus
