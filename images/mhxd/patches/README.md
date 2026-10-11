@@ -10,8 +10,7 @@ here once merged.
 
 - `0001-htxf-get-thread-cleanup-scope.patch`: a download's thread jumped out
   of its `pthread_cleanup_push` scopes when a send failed or the client closed
-  early, which corrupted the thread's descriptor; hxd aborted later in glibc's
-  thread stack cache ("free(): invalid pointer"), joining or creating another
-  thread.
+  early, which is undefined behavior (kangsterizer/mhxd#10).
 - `0002-free-htxf-unlock.patch`: `free_htxf` returned holding the connection's
-  `htxf_mutex` when the slot was already empty, so the next lock hung.
+  `htxf_mutex` when the slot was already empty, so the next lock hung
+  (kangsterizer/mhxd#11).
