@@ -180,8 +180,14 @@ while kill -0 "$HXD_PID" 2>/dev/null; do
 		echo "docker-entrypoint: mhxd health probe failed ($fails/$HEALTH_RETRIES)" >&2
 		if [ "$fails" -ge "$HEALTH_RETRIES" ]; then
 			echo "docker-entrypoint: mhxd wedged — terminating so the container can restart" >&2
-			kill -TERM "$HXD_PID" 2>/dev/null
-			sleep 2
+			# SIGABRT rather than SIGTERM: where core dumps are enabled, the
+			# core shows where every thread was stuck.
+			kill -ABRT "$HXD_PID" 2>/dev/null
+			# A SIGKILL would cut the core short.
+			for _ in 1 2 3 4 5 6 7 8 9 10; do
+				kill -0 "$HXD_PID" 2>/dev/null || break
+				sleep 1
+			done
 			kill -KILL "$HXD_PID" 2>/dev/null
 			wait "$HXD_PID" 2>/dev/null
 			exit 1
